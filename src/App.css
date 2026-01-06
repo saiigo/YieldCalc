@@ -1,0 +1,517 @@
+/* 全局样式 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #f0f2f5;
+  color: #333;
+  font-size: 16px;
+}
+
+/* 应用容器 */
+.app-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* 应用标题 */
+.app-title {
+  text-align: center;
+  color: #1890ff;
+  margin-bottom: 30px !important;
+  font-size: 28px !important;
+}
+
+/* 主卡片 */
+.main-card {
+  margin-bottom: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 0 20px;
+}
+
+/* 输入区域 */
+.input-section {
+  padding: 20px 0;
+}
+
+.input-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 15px;
+  width: 100%;
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+
+/* 结果展示 */
+.results-section {
+  padding: 20px 0;
+}
+
+.result-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  background-color: #fafafa;
+  border-radius: 8px;
+  border-left: 4px solid #1890ff;
+  margin-bottom: 15px;
+}
+
+.result-value {
+  font-size: 18px;
+  font-weight: bold;
+  color: #52c41a;
+}
+
+
+
+/* 历史记录卡片 */
+.history-card {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  padding: 0 20px;
+}
+
+/* 辅助样式 */
+.ant-tabs-tab {
+  font-size: 16px !important;
+}
+
+.ant-typography h4 {
+  margin-bottom: 20px !important;
+  font-size: 18px !important;
+}
+
+.ant-btn-primary {
+  background-color: #1890ff;
+  border-color: #1890ff;
+  height: 40px;
+  font-size: 16px;
+}
+
+.ant-btn-primary:hover {
+  background-color: #40a9ff;
+  border-color: #40a9ff;
+}
+
+/* 输入组件样式 */
+.ant-input-number {
+  height: 40px;
+  font-size: 16px;
+}
+
+.ant-picker {
+  height: 40px !important;
+  font-size: 16px !important;
+}
+
+.ant-picker-input > input {
+  height: 40px !important;
+  line-height: 40px !important;
+  font-size: 16px !important;
+}
+
+.ant-select {
+  height: 40px;
+}
+
+.ant-select-selector {
+  height: 40px !important;
+  line-height: 40px !important;
+  font-size: 16px !important;
+}
+
+.ant-list-item {
+  padding: 15px 0 !important;
+}
+
+.ant-list-item-meta-title {
+  font-size: 16px !important;
+}
+
+.ant-list-item-meta-description {
+  font-size: 14px !important;
+}
+
+/* 新增样式类 */
+.vertical-space {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.full-width {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+.input-item-half {
+  flex: 1 !important;
+  max-width: calc(50% - 5px) !important;
+  box-sizing: border-box !important;
+}
+
+.input-item-half:first-child {
+  margin-right: 10px !important;
+}
+
+.save-btn {
+  margin-top: 20px !important;
+  width: 100% !important;
+}
+
+/* 响应式设计 - 平板 (768px - 1023px) */
+@media (max-width: 1023px) {
+  .app-container {
+    max-width: 100%;
+    padding: 15px;
+  }
+  
+  .app-title {
+    font-size: 24px !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .main-card,
+  .history-card {
+    padding: 0 15px;
+    margin-bottom: 20px;
+  }
+  
+  .input-section,
+  .results-section,
+  .chart-section {
+    padding: 15px 0;
+  }
+  
+  .result-value {
+    font-size: 16px;
+  }
+}
+
+/* 响应式设计 - 手机横屏 (576px - 767px) */
+@media (max-width: 767px) {
+  .app-container {
+    padding: 10px;
+  }
+  
+  .app-title {
+    font-size: 22px !important;
+    margin-bottom: 15px !important;
+  }
+  
+  .main-card,
+  .history-card {
+    padding: 0 10px;
+    margin-bottom: 15px;
+  }
+  
+  .input-row {
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .input-item {
+    margin-bottom: 15px;
+  }
+  
+  .result-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+  }
+  
+  .result-value {
+    font-size: 18px;
+  }
+  
+  .chart-container {
+    padding: 10px;
+    margin-top: 10px;
+  }
+  
+  .ant-tabs-tab {
+    font-size: 14px !important;
+    padding: 8px 12px !important;
+  }
+  
+  .ant-typography h4 {
+    font-size: 16px !important;
+    margin-bottom: 15px !important;
+  }
+  
+  .ant-btn-primary {
+    height: 38px;
+    font-size: 15px;
+  }
+  
+  .ant-input-number,
+  .ant-select,
+  .ant-picker {
+    height: 38px !important;
+    font-size: 15px !important;
+  }
+  
+  .ant-picker-input > input {
+    height: 38px !important;
+    line-height: 38px !important;
+    font-size: 15px !important;
+  }
+  
+  .ant-select-selector {
+    height: 38px !important;
+    line-height: 38px !important;
+    font-size: 15px !important;
+  }
+}
+
+/* 响应式设计 - 手机竖屏 (<= 575px) */
+@media (max-width: 575px) {
+  body {
+    font-size: 14px;
+  }
+  
+  .app-container {
+    padding: 8px;
+  }
+  
+  .app-title {
+    font-size: 20px !important;
+    margin-bottom: 15px !important;
+  }
+  
+  .main-card,
+  .history-card {
+    padding: 0 8px;
+    margin-bottom: 15px;
+    border-radius: 6px;
+  }
+  
+  .input-section,
+  .results-section,
+  .chart-section {
+    padding: 12px 0;
+  }
+  
+  .input-item {
+    margin-bottom: 12px;
+  }
+  
+  .result-item {
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 12px;
+  }
+  
+  .result-value {
+    font-size: 16px;
+  }
+  
+  .chart-container {
+    padding: 8px;
+    margin-top: 10px;
+    border-radius: 6px;
+  }
+  
+  .ant-tabs-tab {
+    font-size: 13px !important;
+    padding: 6px 10px !important;
+  }
+  
+  .ant-typography h4 {
+    font-size: 15px !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .ant-btn-primary {
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  .ant-input-number,
+  .ant-select,
+  .ant-picker {
+    height: 36px !important;
+    font-size: 14px !important;
+  }
+  
+  .ant-picker-input > input {
+    height: 36px !important;
+    line-height: 36px !important;
+    font-size: 14px !important;
+  }
+  
+  .ant-select-selector {
+    height: 36px !important;
+    line-height: 36px !important;
+    font-size: 14px !important;
+  }
+  
+  .ant-list-item {
+    padding: 12px 0 !important;
+  }
+  
+  .ant-list-item-meta-title {
+    font-size: 14px !important;
+  }
+  
+  .ant-list-item-meta-description {
+    font-size: 12px !important;
+  }
+  
+  /* 调整图表高度 */
+  .chart-container .recharts-wrapper {
+    height: 250px !important;
+  }
+}
+
+/* 确保图表在小屏幕上有良好显示 */
+@media (max-width: 480px) {
+  .chart-container .recharts-wrapper {
+    height: 200px !important;
+  }
+  
+  /* 隐藏图表的一些细节，确保在小屏幕上清晰可读 */
+  .recharts-tooltip-wrapper {
+    font-size: 12px !important;
+  }
+  
+  .recharts-cartesian-axis-tick-value {
+    font-size: 12px !important;
+  }
+}
+
+/* 强制所有容器元素宽度自适应 */
+* {
+  box-sizing: border-box !important;
+}
+
+.app-container,
+.main-card,
+.history-card,
+.ant-card,
+.ant-tabs,
+.ant-space,
+.ant-input-number,
+.ant-select,
+.input-section,
+.results-section,
+.chart-section,
+.input-row,
+.input-item,
+.chart-container {
+  width: 100% !important;
+  min-width: 100% !important;
+  max-width: none !important;
+  box-sizing: border-box !important;
+}
+
+/* 桌面端优化 (1024px以上) */
+@media (min-width: 1024px) {
+  .app-container {
+    padding: 30px;
+    max-width: 1200px !important;
+    margin: 0 auto;
+  }
+  
+  .app-title {
+    font-size: 32px !important;
+    margin-bottom: 40px !important;
+  }
+  
+  .main-card,
+  .history-card {
+    padding: 0 30px;
+    margin-bottom: 30px;
+    width: 100% !important;
+  }
+  
+  .input-section,
+  .results-section,
+  .chart-section {
+    padding: 25px 0;
+  }
+  
+  /* 优化输入区域布局 */
+  .input-item {
+    margin-bottom: 20px;
+  }
+  
+  .input-row {
+    gap: 20px;
+  }
+  
+  /* 优化结果展示 */
+  .result-item {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .result-value {
+    font-size: 20px;
+  }
+  
+  /* 优化图表容器 */
+  .chart-container {
+    padding: 25px;
+    margin-top: 20px;
+  }
+  
+  /* 优化Ant Design组件 */
+  .ant-tabs-tab {
+    font-size: 18px !important;
+    padding: 12px 20px !important;
+  }
+  
+  .ant-typography h4 {
+    font-size: 20px !important;
+    margin-bottom: 25px !important;
+  }
+  
+  .ant-btn-primary {
+    height: 44px;
+    font-size: 18px;
+  }
+  
+  .ant-input-number,
+  .ant-select,
+  .ant-picker {
+    height: 44px !important;
+    font-size: 18px !important;
+  }
+  
+  .ant-picker-input > input {
+    height: 44px !important;
+    line-height: 44px !important;
+    font-size: 18px !important;
+  }
+  
+  .ant-select-selector {
+    height: 44px !important;
+    line-height: 44px !important;
+    font-size: 18px !important;
+  }
+}
