@@ -334,7 +334,7 @@ function App() {
   
   return (
     <div className="app-container">
-      {/* <Title level={2} className="app-title">投资年化收益率计算器</Title> */}
+      <Title level={2} className="app-title">投资年化收益率计算器</Title>
       
       <Card className="main-card">
         <Tabs 
