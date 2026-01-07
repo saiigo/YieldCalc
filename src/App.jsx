@@ -130,6 +130,48 @@ function App() {
     return guess * 100;
   };
   
+  // 计算XIRR（扩展内部收益率，按实际天数计算）
+  const calculateXIRR = (cashFlows, flowDates) => {
+    const maxIterations = 1000;
+    const tolerance = 1e-8;
+    let guess = 0.1;
+    
+    for (let i = 0; i < maxIterations; i++) {
+      let npv = 0;
+      let derivative = 0;
+      
+      for (let j = 0; j < cashFlows.length; j++) {
+        const days = flowDates[j];
+        const years = days / 365;
+        
+        if (years === 0) {
+          npv += cashFlows[j];
+        } else {
+          const discountFactor = Math.pow(1 + guess, years);
+          npv += cashFlows[j] / discountFactor;
+          
+          // 计算导数
+          const term1 = -years * cashFlows[j] * Math.pow(1 + guess, -years - 1);
+          derivative += term1;
+        }
+      }
+      
+      // 检查是否收敛
+      if (Math.abs(npv) < tolerance) {
+        return guess;
+      }
+      
+      // 更新猜测值
+      if (derivative === 0) break;
+      guess -= npv / derivative;
+      
+      // 防止出现负数或过大的猜测值
+      if (guess < -1 || guess > 10) break;
+    }
+    
+    return guess;
+  };
+  
   // 计算结果
   const calculateResults = () => {
     try {
@@ -145,37 +187,41 @@ function App() {
         const totalInvestment = initialInvestment + investments.reduce((sum, item) => sum + item.amount, 0);
         const totalReturn = finalAmount - totalInvestment;
         
-        // 准备现金流数组
-        const cashFlows = [];
-        cashFlows.push(-initialInvestment);
-        
-        // 添加中间投资
-        investments.forEach(investment => {
-          const daysFromStart = Math.ceil((investment.date.valueOf() - startDate.valueOf()) / (1000 * 60 * 60 * 24));
-          const periodIndex = Math.max(0, Math.floor(daysFromStart / 30));
-          
-          while (cashFlows.length <= periodIndex) {
-            cashFlows.push(0);
-          }
-          
-          cashFlows[periodIndex] -= investment.amount;
-        });
-        
-        // 添加结束金额
-        const finalPeriodIndex = Math.max(investments.length, Math.ceil(daysDiff / 30));
-        while (cashFlows.length <= finalPeriodIndex) {
-          cashFlows.push(0);
-        }
-        cashFlows[finalPeriodIndex] += finalAmount;
-        
-        // 计算IRR（月度收益率）
-        const monthlyIRR = calculateIRR(cashFlows) / 100;
-        
-        // 将月度IRR转换为年化收益率
-        const annualYield = (Math.pow(1 + monthlyIRR, 12) - 1) * 100;
-        
         // 计算投资天数
         const days = Math.ceil((endDate.valueOf() - startDate.valueOf()) / (1000 * 60 * 60 * 24));
+        
+        // 判断是否有有效的追加投资（非空且金额不为0）
+        const hasValidInvestments = investments.length > 0 && investments.some(item => item.amount > 0);
+        
+        let annualYield;
+        
+        if (!hasValidInvestments) {
+          // 没有追加投资，使用CAGR公式
+          // CAGR = ((结束金额/初始金额)^(365/投资天数) - 1) * 100
+          annualYield = (Math.pow(finalAmount / initialInvestment, 365 / days) - 1) * 100;
+        } else {
+          // 有追加投资，使用XIRR算法
+          // 准备现金流数组（按实际天数计算）
+          const cashFlows = [-initialInvestment];
+          const flowDates = [0]; // 初始投资在第0天
+          
+          // 添加中间投资
+          investments.forEach(investment => {
+            if (investment.amount > 0) {
+              cashFlows.push(-investment.amount);
+              const daysFromStart = Math.ceil((investment.date.valueOf() - startDate.valueOf()) / (1000 * 60 * 60 * 24));
+              flowDates.push(daysFromStart);
+            }
+          });
+          
+          // 添加结束金额
+          cashFlows.push(finalAmount);
+          flowDates.push(days);
+          
+          // 计算XIRR
+          const xirrValue = calculateXIRR(cashFlows, flowDates);
+          annualYield = xirrValue * 100;
+        }
         
         setResults({ annualYield, totalInvestment, totalReturn, finalAmount, days });
       } else if (calculationType === 'sip') {
@@ -249,8 +295,13 @@ function App() {
   
   // 保存计算记录
   const saveToHistory = () => {
-    const [startDate, endDate] = investmentPeriod;
-    const investmentMonths = endDate.diff(startDate, 'month');
+    // 只有定投模式才需要从investmentPeriod获取日期和计算投资月数
+    let investmentMonths;
+    let sipStartDate, sipEndDate;
+    if (calculationType === 'sip') {
+      [sipStartDate, sipEndDate] = investmentPeriod;
+      investmentMonths = sipEndDate.diff(sipStartDate, 'month');
+    }
     
     const record = {
       id: Date.now(),
