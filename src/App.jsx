@@ -4,6 +4,8 @@ const { RangePicker } = DatePicker;
 import { DeleteOutlined, HistoryOutlined, PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import './App.css';
+import 'katex/dist/katex.min.css';
+import { InlineMath, BlockMath } from 'react-katex';
 import {
   calculateIRR,
   formatPercent,
@@ -39,6 +41,9 @@ function App() {
     finalAmount: 0,
     days: 0
   });
+  
+  // 计算方法 - 用于显示对应的公式
+  const [calculationMethod, setCalculationMethod] = useState('cagr');
   
   // 计算历史
   const [history, setHistory] = useState([]);
@@ -194,11 +199,13 @@ function App() {
         const hasValidInvestments = investments.length > 0 && investments.some(item => item.amount > 0);
         
         let annualYield;
+        let method;
         
         if (!hasValidInvestments) {
           // 没有追加投资，使用CAGR公式
           // CAGR = ((结束金额/初始金额)^(365/投资天数) - 1) * 100
           annualYield = (Math.pow(finalAmount / initialInvestment, 365 / days) - 1) * 100;
+          method = 'cagr';
         } else {
           // 有追加投资，使用XIRR算法
           // 准备现金流数组（按实际天数计算）
@@ -221,9 +228,12 @@ function App() {
           // 计算XIRR
           const xirrValue = calculateXIRR(cashFlows, flowDates);
           annualYield = xirrValue * 100;
+          method = 'xirr';
         }
         
+        // 更新计算结果和计算方法
         setResults({ annualYield, totalInvestment, totalReturn, finalAmount, days });
+        setCalculationMethod(method);
       } else if (calculationType === 'sip') {
         // 定投计算：根据初始金额、定投金额、投资期限、投资频率和当前金额，计算年化收益率
         
@@ -246,6 +256,7 @@ function App() {
         // 计算投资天数
         const days = Math.ceil((endDate.valueOf() - startDate.valueOf()) / (1000 * 60 * 60 * 24));
         
+        // 更新计算结果和计算方法
         setResults({ 
           annualYield, 
           totalInvestment, 
@@ -253,6 +264,7 @@ function App() {
           finalAmount: currentAmount,
           days
         });
+        setCalculationMethod('sip');
       }
     } catch {
       message.error('计算失败，请检查输入数据');
@@ -750,6 +762,42 @@ function App() {
           )}
           locale={{ emptyText: '暂无计算历史' }}
         />
+      </Card>
+      
+      {/* 计算公式参考 */}
+      <Card className="formula-reference-card" title="计算公式参考" style={{ marginTop: '20px' }}>
+        <Space orientation="vertical" size="large" className="vertical-space">
+          <div>
+            <Title level={5}>1. 收益计算</Title>
+            
+            <div style={{ marginBottom: '16px' }}>
+              <Text strong>1.1 单笔投资（复合年增长率 CAGR）：</Text>
+              <BlockMath math="\text{年化收益率} = \left(\left(\frac{\text{结束金额}}{\text{初始金额}}\right)^{\frac{365}{\text{投资天数}}} - 1\right) \times 100" />
+              <div style={{ marginTop: '8px' }}>
+                <Text type="secondary">说明：适用于无追加投资的情况，直接计算整体年化收益率</Text>
+              </div>
+            </div>
+            
+            <div>
+              <Text strong>1.2 多笔投资（扩展内部收益率 XIRR）：</Text>
+              <BlockMath math="\sum_{i=1}^{n} \frac{CF_i}{(1 + r)^{\frac{d_i}{365}}} = 0" />
+              <div style={{ marginTop: '8px' }}>
+                <Text type="secondary">说明：适用于有追加投资的情况，通过牛顿-拉夫森迭代法求解年化收益率 r</Text>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <Title level={5}>2. 定投计算</Title>
+            <div>
+              <Text strong>定投年化收益率：</Text>
+              <BlockMath math="\text{当前金额} = \text{初始金额} \times \left(1 + \frac{\text{年化收益率}}{\text{每年期数}}\right)^{\text{总期数}} + \text{每期定投金额} \times \frac{\left(1 + \frac{\text{年化收益率}}{\text{每年期数}}\right)^{\text{总期数}} - 1}{\frac{\text{年化收益率}}{\text{每年期数}}}" />
+              <div style={{ marginTop: '8px' }}>
+                <Text type="secondary">说明：通过牛顿-拉夫森迭代法求解年化收益率，支持不同投资频率</Text>
+              </div>
+            </div>
+          </div>
+        </Space>
       </Card>
     </div>
   );
