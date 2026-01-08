@@ -235,26 +235,82 @@ function App() {
         setResults({ annualYield, totalInvestment, totalReturn, finalAmount, days });
         setCalculationMethod(method);
       } else if (calculationType === 'sip') {
-        // 定投计算：根据初始金额、定投金额、投资期限、投资频率和当前金额，计算年化收益率
+        // 定投计算：使用XIRR公式计算年化收益率
         
         // 从投资期限范围中提取开始和结束日期
         const [startDate, endDate] = investmentPeriod;
         
-        // 计算投资月数
-        const investmentMonths = endDate.diff(startDate, 'month');
+        // 计算投资天数
+        const totalDays = Math.ceil((endDate.valueOf() - startDate.valueOf()) / (1000 * 60 * 60 * 24));
+        if (totalDays <= 0) {
+          setResults({ annualYield: 0, totalInvestment: 0, totalReturn: 0, finalAmount: 0, days: 0 });
+          return;
+        }
         
-        // 计算年化收益率
-        const annualYield = calculateSIPYield(sipInitialInvestment, monthlyInvestment, investmentMonths, investmentFrequency, currentAmount);
+        // 准备现金流数据
+        const cashFlows = [];
+        const flowDates = [];
+        
+        // 添加初始投资
+        cashFlows.push(-sipInitialInvestment);
+        flowDates.push(0); // 初始投资在第0天
         
         // 计算总投入
-        const annualInvestment = monthlyInvestment * 12;
-        const totalInvestment = sipInitialInvestment + (annualInvestment * (investmentMonths / 12));
+        let totalInvestment = sipInitialInvestment;
+        
+        // 定义定投间隔天数
+        const intervalDays = {
+          day: 1,
+          week: 7,
+          biweek: 14,
+          month: 30,
+          quarter: 90,
+          year: 365
+        }[investmentFrequency] || 30;
+        
+        // 添加定期投资
+        let currentDate = startDate.add(intervalDays, 'day');
+        while (currentDate.isBefore(endDate) || currentDate.isSame(endDate)) {
+          // 根据频率调整定投金额
+          let periodicAmount;
+          switch (investmentFrequency) {
+            case 'day':
+              periodicAmount = monthlyInvestment / 30;
+              break;
+            case 'week':
+              periodicAmount = monthlyInvestment / (30 / 7);
+              break;
+            case 'biweek':
+              periodicAmount = monthlyInvestment / (30 / 14);
+              break;
+            case 'quarter':
+              periodicAmount = monthlyInvestment * 3;
+              break;
+            case 'year':
+              periodicAmount = monthlyInvestment * 12;
+              break;
+            default: // month
+              periodicAmount = monthlyInvestment;
+          }
+          
+          cashFlows.push(-periodicAmount);
+          const daysFromStart = Math.ceil((currentDate.valueOf() - startDate.valueOf()) / (1000 * 60 * 60 * 24));
+          flowDates.push(daysFromStart);
+          
+          totalInvestment += periodicAmount;
+          currentDate = currentDate.add(intervalDays, 'day');
+        }
+        
+        // 添加结束金额
+        cashFlows.push(currentAmount);
+        flowDates.push(totalDays);
+        
+        // 计算XIRR
+        const xirrValue = calculateXIRR(cashFlows, flowDates);
+        const annualYield = xirrValue * 100;
         
         // 计算总收益
         const totalReturn = currentAmount - totalInvestment;
-        
-        // 计算投资天数
-        const days = Math.ceil((endDate.valueOf() - startDate.valueOf()) / (1000 * 60 * 60 * 24));
         
         // 更新计算结果和计算方法
         setResults({ 
@@ -262,9 +318,9 @@ function App() {
           totalInvestment, 
           totalReturn, 
           finalAmount: currentAmount,
-          days
+          days: totalDays
         });
-        setCalculationMethod('sip');
+        setCalculationMethod('xirr');
       }
     } catch {
       message.error('计算失败，请检查输入数据');
@@ -659,8 +715,8 @@ function App() {
               </Col>
               <Col span={12}>
                 <div className="result-item">
-                  <Text strong>投资时间：</Text>
-                  <Text className="result-value">{results.days} 天</Text>
+                  <Text strong>投资天数：</Text>
+                  <Text className="result-value">{results.days}</Text>
                 </div>
               </Col>
             </Row>
@@ -736,7 +792,6 @@ function App() {
                       <>
                         <div>初始投资：{formatAmount(item.initialInvestment)} | 开始日期：{item.startDate}</div>
                         <div>结束金额：{formatAmount(item.finalAmount)} | 结束日期：{item.endDate}</div>
-                        <div>年化收益率：{formatPercent(item.results.annualYield)}</div>
                         {item.investments.length > 0 && (
                           <div>
                             <Text strong>追加投资：</Text>
@@ -747,11 +802,13 @@ function App() {
                             ))}
                           </div>
                         )}
+                        <div>投资天数：{item.results.days} 天</div>
+                        <div>年化收益率：{formatPercent(item.results.annualYield)}</div>
                       </>
                     ) : (
                       <>
                         <div>{getFrequencyName(item.investmentFrequency)}定投：{formatAmount(item.monthlyInvestment)}，预期年化：{formatPercent(item.expectedAnnualRate)}，投资期限：{item.investmentMonths}个月</div>
-                        <div>总投入：{formatAmount(item.results.totalInvestment)} | 总收益：{formatAmount(item.results.totalReturn)}</div>
+                        <div>投资天数：{item.results.days} 天 | 总投入：{formatAmount(item.results.totalInvestment)} | 总收益：{formatAmount(item.results.totalReturn)}</div>
                         <div>最终金额：{formatAmount(item.results.finalAmount)}</div>
                       </>
                     )}
@@ -790,10 +847,19 @@ function App() {
           <div>
             <Title level={5}>2. 定投计算</Title>
             <div>
-              <Text strong>定投年化收益率：</Text>
-              <BlockMath math="\text{当前金额} = \text{初始金额} \times \left(1 + \frac{\text{年化收益率}}{\text{每年期数}}\right)^{\text{总期数}} + \text{每期定投金额} \times \frac{\left(1 + \frac{\text{年化收益率}}{\text{每年期数}}\right)^{\text{总期数}} - 1}{\frac{\text{年化收益率}}{\text{每年期数}}}" />
+              <Text strong>定投年化收益率（XIRR）：</Text>
+              <BlockMath math="\sum_{k=1}^{K} \frac{CF_k}{(1 + r)^{\frac{\Delta t_k}{365}}} = 0" />
               <div style={{ marginTop: '8px' }}>
-                <Text type="secondary">说明：通过牛顿-拉夫森迭代法求解年化收益率，支持不同投资频率</Text>
+                <Text type="secondary">说明：通过牛顿-拉夫森迭代法求解年化收益率 r，适用于定期投资场景，考虑实际投资日期和金额</Text>
+                <div style={{ marginTop: '4px' }}>
+                  <Text type="secondary">CF<sub>k</sub>：第 k 笔现金流（投入为负，期末市值为正）</Text>
+                </div>
+                <div>
+                  <Text type="secondary">Δt<sub>k</sub>：该笔现金流距离第一笔现金流的天数</Text>
+                </div>
+                <div>
+                  <Text type="secondary">r：年化收益率（要求解）</Text>
+                </div>
               </div>
             </div>
           </div>
